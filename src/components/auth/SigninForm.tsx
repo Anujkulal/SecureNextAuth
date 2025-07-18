@@ -16,7 +16,7 @@ import { useSearchParams } from 'next/navigation';
 
 type MessageState = {
   error?: string | undefined;
-  success?: string; 
+  success?: string;
 }
 
 export const SigninForm = () => {
