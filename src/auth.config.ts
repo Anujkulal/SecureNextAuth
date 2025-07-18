@@ -18,7 +18,7 @@ export default { providers: [
     Credentials({
         async authorize(credentials){
             const validatedFields = signinSchema.safeParse(credentials);
-            console.log("--- values from auth.config.ts", validatedFields);
+            // console.log("--- values from auth.config.ts", validatedFields);
 
             if(validatedFields.success){
                 const {email, password} = validatedFields.data;
