@@ -1,6 +1,12 @@
 #!/bin/bash
 
 timestamp=$(date "+%d-%m-%Y %H:%M:%S")
-git add .
-git commit -m "updated on $timestamp"
-git push
+
+changed_files=$(git status --porcelain | awk '{print $2}')
+
+for file in $changed_files; do
+    git add "$file"
+    git commit -m "updated $file on $timestamp"
+done
+
+git push 
