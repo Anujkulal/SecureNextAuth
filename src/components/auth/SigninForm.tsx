@@ -26,7 +26,7 @@ export const SigninForm = () => {
       email: '',
       password: ''
     }
-  });
+});
 
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<MessageState>({error: '', success: ''});
