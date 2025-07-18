@@ -6,7 +6,9 @@ changed_files=$(git status --porcelain | awk '{print $2}')
 
 for file in $changed_files; do
     git add "$file"
-    git commit -m "updated $file on $timestamp"
+    filename=$(basename "$file")
+    git commit -m "updated $filename on $timestamp"
+    # echo "$filename"
 done
 
-git push 
+# git push 
