@@ -11,4 +11,4 @@ for file in $changed_files; do
     # echo "$filename"
 done
 
-# git push 
+git push 
