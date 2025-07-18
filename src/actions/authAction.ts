@@ -8,6 +8,7 @@ import { signIn } from '@/auth';
 import { DEFAULT_SIGNIN_REDIRECT } from '@/routes';
 import { AuthError } from 'next-auth';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
+import { generateVerificationToken } from '@/lib/tokens';
 
 export const signinAction = async (values: z.infer<typeof signinSchema>) => {
     // console.log("values from server action", values);
@@ -17,6 +18,17 @@ export const signinAction = async (values: z.infer<typeof signinSchema>) => {
         return { error: "Invalid fields!" };
     }
     const {email, password} = validatedFields.data;
+
+    const existingUser = await getUserByEmail(email);
+    // console.log("existingUser", existingUser);
+    if(!existingUser || !existingUser.password || !existingUser.email){
+        return { error: "User does not exist!" };
+    }
+
+    if(!existingUser.emailVerified){
+        const verificationToken = await generateVerificationToken(existingUser.email);
+        return { success: "Confirmation email sent! Please verify your email.", verificationToken };
+    }
 
     try {
         await signIn("credentials", {
@@ -67,6 +79,7 @@ export const signupAction = async (values: z.infer<typeof signupSchema>) => {
     });
 
     // Verification part
+    const verificationToken = await generateVerificationToken(email);
 
-    return { success: "Account created successfully!" };
+    return { success: "Email confirmation sent! Please check your email.", verificationToken };
 }
