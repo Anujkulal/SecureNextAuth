@@ -21,7 +21,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     error: "/auth/error", // Error code passed in query string as ?error=
   },
   events: {
-    async linkAccount({user}){
+    async linkAccount({user}){ // This event is triggered when a user links an account (e.g., specially for OAuth)
       await db.user.update({
         where: {id: user.id},
         data: { emailVerified: new Date()}
@@ -29,12 +29,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }
   },
   callbacks: {
-    // async signIn({user}){
-    //   const existingUser = await getUserById(user.id);
+    async signIn({user, account}){
+      if(account?.provider !== "credentials"){ // allow sign in for OAuth
+        return true; 
+      }
 
-    //   if(!existingUser || !existingUser.emailVerified) return false;
-    //   return true;
-    // },
+      const existingUser = await getUserById(user.id);
+      if(!existingUser?.emailVerified) return false; // block users from signing in if their email is not verified
+
+      //2FA
+
+      return true;
+    },
     
     async jwt({token}){ // token is reliable than the user or other objects
       // console.log("JWT Callback", token);
