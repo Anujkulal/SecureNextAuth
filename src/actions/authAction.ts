@@ -1,5 +1,6 @@
 "use server";
-import { signinSchema, signupSchema } from '@/schemas';
+
+import { forgotPasswordSchema, newPasswordSchema, signinSchema, signupSchema } from '@/schemas';
 import * as z from 'zod';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
@@ -8,7 +9,10 @@ import { signIn } from '@/auth';
 import { DEFAULT_SIGNIN_REDIRECT } from '@/routes';
 import { AuthError } from 'next-auth';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
-import { generateVerificationToken } from '@/lib/tokens';
+import { generatePasswordResetToken, generateVerificationToken } from '@/lib/tokens';
+import { sendPasswordResetEmail, sendVerificationEmail } from '@/lib/mail';
+import { getVerificationTokenByToken } from '@/app/data/verification-token';
+import { getPasswordResetTokenByToken } from '@/app/data/password-reset';
 
 export const signinAction = async (values: z.infer<typeof signinSchema>) => {
     // console.log("values from server action", values);
@@ -25,8 +29,12 @@ export const signinAction = async (values: z.infer<typeof signinSchema>) => {
         return { error: "User does not exist!" };
     }
 
-    if(!existingUser.emailVerified){
+    // use only for production, not for development
+    // if(process.env.NODE_ENV !== "development" && !existingUser.emailVerified){ 
+    if(!existingUser.emailVerified){ 
+        // Verification part
         const verificationToken = await generateVerificationToken(existingUser.email);
+        await sendVerificationEmail(verificationToken.email, verificationToken.token);
         return { success: "Confirmation email sent! Please verify your email.", verificationToken };
     }
 
@@ -80,6 +88,96 @@ export const signupAction = async (values: z.infer<typeof signupSchema>) => {
 
     // Verification part
     const verificationToken = await generateVerificationToken(email);
+    await sendVerificationEmail(verificationToken.email, verificationToken.token);
 
     return { success: "Email confirmation sent! Please check your email.", verificationToken };
+}
+
+/**
+ * Used only for production, not for development
+ * used to verify the token from the email
+ * @param token 
+ * @returns 
+ */
+export const newVerificationAction = async (token: string) => {
+    const existingToken = await getVerificationTokenByToken(token);
+    // console.log("existingToken", existingToken); 
+    if(!existingToken){
+        return { error: "Token does not exist!" };
+    }
+
+    const hasExpired = new Date(existingToken.expires) < new Date();
+    if(hasExpired) return { error: "Token has expired!" };
+
+    const existingUser = await getUserByEmail(existingToken.email);
+    if(!existingUser) return { error: "User does not exist!" };
+
+    await db.user.update({
+        where: { id: existingUser.id},
+        data: {
+            emailVerified: new Date(), // set emailVerified to current date
+            email: existingToken.email // update email to the verified email
+        }
+    })
+    await db.verificationToken.delete({
+        where: { id: existingToken.id }
+    });
+
+    return { success: "Email verified successfully!" };
+}
+
+export const forgotPasswordAction = async (values: z.infer<typeof forgotPasswordSchema>) => {
+    const validatedFields = forgotPasswordSchema.safeParse(values);
+
+    if(!validatedFields.success){
+        return { error: "Invalid fields!" };
+    }
+
+    const { email } = validatedFields.data;
+    const existingUser = await getUserByEmail(email);
+    if(!existingUser){
+        return { error: "User does not exist!" };
+    }
+
+    const passwordResetToken = await generatePasswordResetToken(email);
+    await sendPasswordResetEmail(passwordResetToken.email, passwordResetToken.token);
+
+
+    return { success: "Please check your email." };
+}
+
+export const newPasswordAction = async (values: z.infer<typeof newPasswordSchema>, token: string | null) => {
+    if(!token) {
+        return { error: "Token is required!" };
+    }
+
+    const validatedFields = newPasswordSchema.safeParse(values);
+    if(!validatedFields.success){
+        return { error: "Invalid fields!" };
+    }
+    const { password } = validatedFields.data;
+    const existingToken = await getPasswordResetTokenByToken(token);
+    if(!existingToken){
+        return { error: "Invalid token!" };
+    }
+
+    const hasExpired = new Date(existingToken.expires) < new Date();
+    if(hasExpired) return { error: "Token has expired!" };
+
+    const existingUser = await getUserByEmail(existingToken.email);
+    if(!existingUser) return { error: "User does not exist!" };
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.user.update({
+        where: { id: existingUser.id },
+        data: {
+            password: hashedPassword
+        }
+    })
+
+    await db.passwordResetToken.delete({
+        where: { id: existingToken.id }
+    });
+
+    return { success: "Password updated successfully!" };
 }
