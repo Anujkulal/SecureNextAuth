@@ -6,6 +6,10 @@ export const signinSchema = z.object({
     code: z.optional(z.string()),
 })
 
+export const settingsSchema = z.object({
+    name: z.optional(z.string()),
+})
+
 export const forgotPasswordSchema = z.object({
     email: z.email("Invalid email address"),
 })
