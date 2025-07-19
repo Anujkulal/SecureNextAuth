@@ -24,6 +24,8 @@ model User {
   password      String? // optional because we'll also be supporting OAuth
   role          UserRole    @default(USER) // default role is 'USER'
   accounts      Account[]
+  isTwoFactorEnabled Boolean @default(false) @map("is_two_factor_enabled")
+  twoFactorConfirmation TwoFactorConfirmation?
  
   @@map("users")
 }
@@ -63,4 +65,19 @@ model PasswordResetToken {
   token String @unique
   expires DateTime
   @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id String @id @default(cuid())
+  email String
+  token String @unique
+  expires DateTime
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId])
 }
