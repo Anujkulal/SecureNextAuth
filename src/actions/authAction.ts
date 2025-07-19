@@ -28,6 +28,11 @@ import { getVerificationTokenByToken } from "@/app/data/verification-token";
 import { getPasswordResetTokenByToken } from "@/app/data/password-reset";
 import { getTwoFactorTokenByEmail } from "@/app/data/two-factor-token";
 import { getTwoFactorConfirmationByUserId } from "@/app/data/two-factor-confirmation";
+import { signOut } from "@/auth";
+
+export const signOutAction = async () => {
+  await signOut();
+}
 
 export const signinAction = async (values: z.infer<typeof signinSchema>) => {
   // console.log("values from server action", values);
