@@ -8,6 +8,7 @@ import { getTwoFactorConfirmationByUserId } from "./app/data/two-factor-confirma
 
 export type ExtendedUser = DefaultSession["user"] & {
   role: UserRole | "ADMIN" | "USER";
+  isTwoFactorEnabled?: boolean; // optional field for 2FA
 }
 
 declare module "next-auth" {
@@ -69,6 +70,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if(!existingUser) return token;
 
       token.role = existingUser.role; // add role to the token
+      token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled; // add isTwoFactorEnabled to the token
       return token;
     },
 
@@ -83,11 +85,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
          * Here we are extending the session user object to include the role.
          * for some reason, the types are not working.
          * so we are using a type assertion to set the role.
-         */
-        // session.user.role = token.role as "ADMIN" | "USER"; // add role to the session
-
-        // Here we are using a type assertion as UserRole to set the role.
-        session.user.role = token.role as UserRole; // add role to the session
+        */
+       // session.user.role = token.role as "ADMIN" | "USER"; // add role to the session
+       
+       // Here we are using a type assertion as UserRole to set the role.
+       session.user.role = token.role as UserRole; // add role to the session
+      }
+      if(session.user){
+        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean; // add isTwoFactorEnabled to the session
       }
 
       return session;
