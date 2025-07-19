@@ -11,7 +11,7 @@ import { LogOutIcon } from 'lucide-react';
 const UserButton = () => {
     const user = useCurrentUser();
     
-    console.log("user", user);
+    // console.log("user", user);
   return (
     <DropdownMenu>
         <DropdownMenuTrigger>
