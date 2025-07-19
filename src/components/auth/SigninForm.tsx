@@ -13,6 +13,7 @@ import FormError from '../form/FormError';
 import FormSuccess from '../form/FormSuccess';
 import { signinAction } from '@/actions/authAction';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 type MessageState = {
   error?: string | undefined;
@@ -76,6 +77,15 @@ export const SigninForm = () => {
                 <FormMessage />
               </FormItem>
             )} />
+            <Button
+            variant={'link'}
+            className='px-0 font-normal'
+            size={"sm"}
+            >
+              <Link href='/auth/forgot-password'>
+              Forgot Password?
+              </Link>
+            </Button>
             <FormError message={message.error || urlError}/>
             <FormSuccess message={message.success}/>
             <Button type='submit' className='w-full' disabled={isPending}>Sign In</Button>
