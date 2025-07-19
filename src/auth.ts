@@ -64,11 +64,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       // console.log("JWT Callback", token);
       // token.customField = "test";
 
-      if(!token.sub) return token;
+      console.log("Called jwt callback from auth.ts");
 
+      if(!token.sub) return token;
+ 
       const existingUser = await getUserById(token.sub); // use getUserById instead of email bcz id is a primary key and more reliable and faster.
       if(!existingUser) return token;
 
+      token.name = existingUser.name;
+      token.email = existingUser.email;
       token.role = existingUser.role; // add role to the token
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled; // add isTwoFactorEnabled to the token
       return token;
@@ -93,6 +97,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
       if(session.user){
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean; // add isTwoFactorEnabled to the session
+        session.user.name = token.name as string; // add name to the session
+        session.user.email = token.email as string; // add email to the session
       }
 
       return session;
