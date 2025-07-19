@@ -4,6 +4,7 @@ import { PrismaClient, UserRole } from "@prisma/client"
 import authConfig from "./auth.config"
 import { db } from "./lib/db"
 import { getUserById } from "./app/data/user"
+import { getTwoFactorConfirmationByUserId } from "./app/data/two-factor-confirmation"
 
 export type ExtendedUser = DefaultSession["user"] & {
   role: UserRole | "ADMIN" | "USER";
@@ -41,8 +42,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       const existingUser = await getUserById(user.id);
       if(!existingUser?.emailVerified) return false; // block users from signing in if their email is not verified
 
-      //2FA
+      //2FA (TWO FACTOR AUTHENTICATION)
+      // if(process.env.NODE_ENV !== "development" && !existingUser?.isTwoFactorEnabled){
+      if(existingUser?.isTwoFactorEnabled){
+        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
+        // console.log("Two Factor Confirmation: ", {twoFactorConfirmation});
+        
+        if(!twoFactorConfirmation) return false;
 
+        // delete 2FA for next signin
+        await db.twoFactorConfirmation.delete({
+          where: {id: twoFactorConfirmation.id}
+        })
+      }
 
       return true;
     },
