@@ -54,6 +54,8 @@ const UserInfo = ({ user }: UserInfoProps) => {
         });
     };
 
+    // console.log("2FA::: ", user?.isTwoFactorEnabled)
+
     return (
         <div className="w-full max-w-4xl mx-auto space-y-6">
             {/* Main Profile Card */}
@@ -92,7 +94,7 @@ const UserInfo = ({ user }: UserInfoProps) => {
                                 <Mail className="h-4 w-4" />
                                 {user?.email || 'No email provided'}
                             </p>
-                            <div className="flex items-center gap-2">
+                            {/* <div className="flex items-center gap-2">
                                 {user?.emailVerified ? (
                                     <Badge variant="outline" className="text-green-600 border-green-600">
                                         <CheckCircle className="h-3 w-3 mr-1" />
@@ -104,7 +106,7 @@ const UserInfo = ({ user }: UserInfoProps) => {
                                         Email Not Verified
                                     </Badge>
                                 )}
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
