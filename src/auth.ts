@@ -30,14 +30,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async signIn({user, account}){
+      // console.log("Signin callback from auth.ts::: ",user, account);
+      
       if(account?.provider !== "credentials"){ // allow sign in for OAuth
         return true; 
       }
 
+      // only for production, not for development
+      // if(process.env.NODE_ENV !== "development" && !user.emailVerified){
       const existingUser = await getUserById(user.id);
       if(!existingUser?.emailVerified) return false; // block users from signing in if their email is not verified
 
       //2FA
+
 
       return true;
     },
