@@ -7,7 +7,7 @@ const ServerPage = async () => {
     const user = await currentUser();
   return (
     <div>
-        <UserInfo user={user} />
+        <UserInfo user={(user as any)} />
     </div>
   )
 }
