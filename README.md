@@ -49,8 +49,8 @@ A comprehensive authentication system built with Next.js 14, NextAuth.js v5, and
 
 ### Prerequisites
 - Node.js 18+ 
-- npm/yarn/pnpm
-- Database (PostgreSQL, MySQL, or SQLite)
+- npm
+- Database (PostgreSQL)
 
 ### Installation
 
@@ -63,10 +63,6 @@ A comprehensive authentication system built with Next.js 14, NextAuth.js v5, and
 2. **Install dependencies**
    ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
    ```
 
 3. **Environment Setup**
