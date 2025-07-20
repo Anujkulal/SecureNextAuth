@@ -8,9 +8,12 @@ import { generateVerificationToken } from "@/lib/tokens";
 import { settingsSchema } from "@/schemas";
 import bcrypt from "bcryptjs";
 import * as z from "zod";
+import { auth } from "@/auth"
 
 export const settingsAction = async (values: z.infer<typeof settingsSchema>) => {
     const user = await currentUser();
+    // console.log("Settings Action User: ", user);
+    // console.log("Auth User: ", auth());
     if(!user){
         return  {error: "Unauthorized: User not found."};
     }
@@ -53,12 +56,14 @@ export const settingsAction = async (values: z.infer<typeof settingsSchema>) => 
         values.newPassword = undefined; // clear newPassword field after hashing
     }
 
-    await db.user.update({
+    const updatedUser = await db.user.update({
         where: {id: user.id},
         data: {
             ...values,
         }
     })
+
+    
 
     return { success: "Settings updated successfully." };
 }
