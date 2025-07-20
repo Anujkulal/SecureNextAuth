@@ -22,20 +22,25 @@ import { Badge } from '@/components/ui/badge';
 import { Settings, User, Mail, Lock, Shield, Save, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const SettingsPage = () => {    
+const SettingsPage = () => {  
+    const { data: session, status, update } = useSession();  
     const user = useCurrentUser();
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-    const { update } = useSession();
+    // const { update } = useSession();
     const [isPending, startTransition] = useTransition();
+
+    console.log("Current User:", user);
+    console.log("Session Data:", session);
+    // console.log("Session Status:", status);
 
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
         defaultValues: {
-            name: user?.name || undefined,
-            email: user?.email || undefined,
-            password: undefined,
-            newPassword: undefined,
-            role: user?.role || undefined,
+            name: user?.name || "",
+            email: user?.email || "",
+            password: "",
+            newPassword: "",
+            role: user?.role || "USER",
             isTwoFactorEnabled: user?.isTwoFactorEnabled || false,
         }
     });
@@ -44,15 +49,15 @@ const SettingsPage = () => {
     useEffect(() => {
         if (user) {
             form.reset({
-                name: user.name || undefined,
-                email: user.email || undefined,
-                password: undefined,
-                newPassword: undefined,
-                role: user.role || undefined,
+                name: user.name || "",
+                email: user.email || "",
+                password: "",
+                newPassword: "",
+                role: user.role || "USER",
                 isTwoFactorEnabled: user.isTwoFactorEnabled || false,
             });
         }
-    }, [user, form]);
+    }, [user]);
 
     // Clear messages after 5 seconds
     useEffect(() => {
@@ -64,17 +69,22 @@ const SettingsPage = () => {
         }
     }, [message]);
 
+    useEffect(() => {
+        // Force session refresh when component mounts
+        update();
+    }, []);
+
     const onSubmit = (values: z.infer<typeof settingsSchema>) => {
         setMessage(null);
         
         startTransition(() => {
             settingsAction(values)
-                .then((data) => {
-                    if (data?.error) {
+                .then(async (data) => {
+                    if (data?.error) { 
                         setMessage({ type: 'error', text: data.error });
                     }
                     if (data?.success) {
-                        update(); // Update the session
+                        await update(); // Update the session
                         setMessage({ type: 'success', text: data.success });
                         // Reset password fields after successful update
                         form.setValue('password', '');
@@ -295,7 +305,7 @@ const SettingsPage = () => {
                                                         <FormControl>
                                                             <Switch 
                                                                 disabled={isPending} 
-                                                                checked={field.value} 
+                                                                checked={field.value || false} 
                                                                 onCheckedChange={field.onChange} 
                                                             />
                                                         </FormControl>
