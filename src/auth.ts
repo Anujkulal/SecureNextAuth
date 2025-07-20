@@ -5,10 +5,12 @@ import authConfig from "./auth.config"
 import { db } from "./lib/db"
 import { getUserById } from "./app/data/user"
 import { getTwoFactorConfirmationByUserId } from "./app/data/two-factor-confirmation"
+import { getAccountByUserId } from "./app/data/accounts"
 
 export type ExtendedUser = DefaultSession["user"] & {
   role: UserRole | "ADMIN" | "USER";
   isTwoFactorEnabled?: boolean; // optional field for 2FA
+  isOAuth: boolean;
 }
 
 declare module "next-auth" {
@@ -71,6 +73,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       const existingUser = await getUserById(token.sub); // use getUserById instead of email bcz id is a primary key and more reliable and faster.
       if(!existingUser) return token;
 
+      const existingAccount = await getAccountByUserId(existingUser.id);
+
+      token.isOAuth  = !!existingAccount; // check if the user has an OAuth account linked
+
       token.name = existingUser.name;
       token.email = existingUser.email;
       token.role = existingUser.role; // add role to the token
@@ -97,8 +103,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
       if(session.user){
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean; // add isTwoFactorEnabled to the session
+      }
+      
+      if(session.user){
         session.user.name = token.name as string; // add name to the session
         session.user.email = token.email as string; // add email to the session
+        session.user.isOAuth = token.isOAuth as boolean; // add isOAuth to the session
       }
 
       return session;
