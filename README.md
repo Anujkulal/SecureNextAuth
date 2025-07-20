@@ -40,7 +40,7 @@ A comprehensive authentication system built with Next.js 14, NextAuth.js v5, and
 ### Backend
 - **NextAuth.js v5** - Complete authentication solution
 - **Prisma** - Type-safe database ORM
-- **neon** - Serverless PostgreSQL database
+- **Neon** - Serverless PostgreSQL database
 - **Bcrypt** - Password hashing
 - **Resend** - Email service integration
 
@@ -71,10 +71,10 @@ A comprehensive authentication system built with Next.js 14, NextAuth.js v5, and
 
 3. **Environment Setup**
    
-   Create a `.env.local` file in the root directory:
+   Create a `.env` file in the root directory:
    ```env
    
-   NODE_ENV=development
+    NODE_ENV=development
 
     DATABASE_URL=
 
