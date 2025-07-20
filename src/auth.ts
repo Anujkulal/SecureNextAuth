@@ -66,7 +66,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       // console.log("JWT Callback", token);
       // token.customField = "test";
 
-      console.log("Called jwt callback from auth.ts");
+      // console.log("Called jwt callback from auth.ts");
 
       if(!token.sub) return token;
  
@@ -111,6 +111,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         session.user.isOAuth = token.isOAuth as boolean; // add isOAuth to the session
       }
 
+      // console.log("Session Callback from auth.ts: ", session);
       return session;
     },
     
